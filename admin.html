@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理画面 | Linora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #FBF7F1;
+    --surface: #FFFFFF;
+    --surface-alt: #F3ECE1;
+    --line: #E1D3B8;
+    --ink: #382E24;
+    --ink-soft: #8B7B65;
+    --gold: #A9843F;
+    --gold-deep: #8C6C2E;
+    --sage: #74836B;
+    --sage-bg: #EAEEE5;
+    --amber: #B08A2E;
+    --amber-bg: #F4EAD2;
+    --danger: #A85B4C;
+    --danger-bg: #F5E4E0;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background: var(--bg); color: var(--ink);
+    font-family: "Noto Sans JP", sans-serif;
+  }
+  header{
+    padding: 22px 20px;
+    border-bottom: 1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  header .title{
+    font-family: "Shippori Mincho", serif;
+    font-size: 19px;
+  }
+  header .title small{ display:block; font-size: 11px; color: var(--ink-soft); font-weight: 400; margin-top:2px;}
+  .wrap{ max-width: 900px; margin: 0 auto; padding-bottom: 60px; }
+
+  /* login */
+  #loginScreen{
+    max-width: 340px; margin: 90px auto; padding: 0 20px; text-align:center;
+  }
+  #loginScreen .mark{ font-family:"Shippori Mincho", serif; font-size: 20px; margin-bottom: 18px; }
+  #loginScreen input{
+    width:100%; padding: 12px; border:1px solid var(--line); font-size:15px; margin-bottom: 12px;
+    background: var(--surface); color: var(--ink);
+  }
+  #loginScreen button{
+    width:100%; padding: 12px; border:none; background: var(--gold-deep); color:#fff;
+    font-family:"Shippori Mincho", serif; font-size: 15px; cursor:pointer;
+  }
+  #loginScreen .hint{ font-size: 12px; color: var(--ink-soft); margin-top: 14px; }
+  #loginError{ color: var(--danger); font-size: 12px; display:none; margin-bottom: 8px; }
+
+  #dashboard{ display:none; }
+
+  .toolbar{
+    display:flex; flex-wrap:wrap; gap: 10px; align-items:center;
+    padding: 16px 20px; border-bottom: 1px solid var(--line);
+  }
+  .toolbar select, .toolbar input[type=date]{
+    padding: 8px 10px; border:1px solid var(--line); background:#fff; font-size: 13px; color: var(--ink);
+  }
+  .toolbar .stat{
+    margin-left: auto;
+    font-size: 12px; color: var(--ink-soft);
+  }
+  .toolbar button.link{
+    background:none; border:none; color: var(--ink-soft); font-size:12px; text-decoration:underline; cursor:pointer; padding:0;
+  }
+
+  .list{ padding: 10px 20px; }
+  .empty{
+    text-align:center; padding: 60px 20px; color: var(--ink-soft); font-size: 14px;
+  }
+
+  .card{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 16px;
+    margin-bottom: 12px;
+    display:grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px 14px;
+  }
+  .card .datetime{
+    font-family: "Shippori Mincho", serif;
+    font-size: 16px;
+    color: var(--gold-deep);
+  }
+  .card .badge{
+    align-self:start;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space:nowrap;
+  }
+  .badge.pending{ background: var(--amber-bg); color: var(--amber); }
+  .badge.confirmed{ background: var(--sage-bg); color: var(--sage); }
+  .badge.cancelled{ background: var(--danger-bg); color: var(--danger); }
+
+  .card .menu-line{ grid-column: 1 / -1; font-size: 14px; }
+  .card .customer{ grid-column: 1 / -1; font-size: 13px; color: var(--ink-soft); }
+  .card .note{ grid-column: 1 / -1; font-size: 12px; color: var(--ink-soft); background: var(--surface-alt); padding: 8px 10px; margin-top: 2px; }
+
+  .card .actions{
+    grid-column: 1 / -1;
+    display:flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;
+  }
+  .card .actions button{
+    font-size: 12px;
+    padding: 7px 12px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+    cursor:pointer;
+  }
+  .card .actions button.confirm{ border-color: var(--sage); color: var(--sage); }
+  .card .actions button.cancel{ border-color: var(--danger); color: var(--danger); }
+  .card .actions button.del{ margin-left:auto; color: var(--ink-soft); }
+
+  .day-heading{
+    font-family:"Shippori Mincho", serif;
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin: 22px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--line);
+  }
+  .day-heading:first-child{ margin-top: 0; }
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="mark">Linora 管理画面</div>
+  <div id="loginError">パスワードが違います</div>
+  <input type="password" id="pwInput" placeholder="パスワード">
+  <button id="loginBtn">ログイン</button>
+  <div class="hint">この画面はオーナー専用です。パスワードは初期設定時にお伝えします。</div>
+</div>
+
+<div id="dashboard">
+  <header>
+    <div class="title">Linora 予約管理<small>オーナー用ダッシュボード</small></div>
+    <button class="link" id="logoutBtn" style="background:none;border:none;color:#8B7B65;font-size:12px;cursor:pointer;">ログアウト</button>
+  </header>
+  <div class="wrap">
+    <div class="toolbar">
+      <select id="statusFilter">
+        <option value="all">すべての状態</option>
+        <option value="pending">未確定のみ</option>
+        <option value="confirmed">確定のみ</option>
+        <option value="cancelled">キャンセルのみ</option>
+      </select>
+      <input type="date" id="dateFilter">
+      <button class="link" id="clearFilter">絞り込み解除</button>
+      <div class="stat" id="statText"></div>
+    </div>
+    <div class="list" id="list"></div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+(function(){
+  // NOTE: prototype-level auth only — for production this must be replaced
+  // with real server-side authentication.
+  const ADMIN_PASSWORD = "linora2026";
+
+  const loginScreen = document.getElementById("loginScreen");
+  const dashboard = document.getElementById("dashboard");
+  const pwInput = document.getElementById("pwInput");
+  const loginBtn = document.getElementById("loginBtn");
+  const loginError = document.getElementById("loginError");
+
+  function tryLogin(){
+    if (pwInput.value === ADMIN_PASSWORD) {
+      sessionStorage.setItem("linoru_admin_ok", "1");
+      showDashboard();
+    } else {
+      loginError.style.display = "block";
+    }
+  }
+  loginBtn.addEventListener("click", tryLogin);
+  pwInput.addEventListener("keydown", e => { if (e.key === "Enter") tryLogin(); });
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    sessionStorage.removeItem("linoru_admin_ok");
+    location.reload();
+  });
+
+  function showDashboard(){
+    loginScreen.style.display = "none";
+    dashboard.style.display = "block";
+    renderList();
+  }
+
+  if (sessionStorage.getItem("linoru_admin_ok") === "1") showDashboard();
+
+  const statusFilter = document.getElementById("statusFilter");
+  const dateFilter = document.getElementById("dateFilter");
+  statusFilter.addEventListener("change", renderList);
+  dateFilter.addEventListener("change", renderList);
+  document.getElementById("clearFilter").addEventListener("click", () => {
+    statusFilter.value = "all"; dateFilter.value = ""; renderList();
+  });
+
+  const STATUS_LABEL = { pending: "未確定", confirmed: "確定", cancelled: "キャンセル" };
+
+  function renderList(){
+    const list = document.getElementById("list");
+    let bookings = loadBookings();
+    if (statusFilter.value !== "all") bookings = bookings.filter(b => b.status === statusFilter.value);
+    if (dateFilter.value) bookings = bookings.filter(b => b.date === dateFilter.value);
+    bookings.sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
+
+    document.getElementById("statText").textContent = `全 ${loadBookings().length} 件中 ${bookings.length} 件表示`;
+
+    if (bookings.length === 0) {
+      list.innerHTML = '<div class="empty">該当する予約はありません</div>';
+      return;
+    }
+
+    let html = "";
+    let lastDate = null;
+    bookings.forEach(b => {
+      if (b.date !== lastDate) {
+        html += `<div class="day-heading">${b.date}</div>`;
+        lastDate = b.date;
+      }
+      const optLine = b.optionNames && b.optionNames.length ? `＋ ${b.optionNames.join("、")}` : "";
+      html += `
+        <div class="card">
+          <div class="datetime">${b.time}</div>
+          <div class="badge ${b.status}">${STATUS_LABEL[b.status]}</div>
+          <div class="menu-line">${b.menuName} ${optLine ? "（"+optLine+"）" : ""} ・ ${yen(b.total)}〜</div>
+          <div class="customer">${b.name} 様 ／ ${b.tel}${b.line ? " ／ LINE: " + b.line : ""}</div>
+          ${b.note ? `<div class="note">${b.note}</div>` : ""}
+          <div class="actions">
+            ${b.status !== "confirmed" ? `<button class="confirm" data-id="${b.id}" data-action="confirmed">確定にする</button>` : ""}
+            ${b.status !== "cancelled" ? `<button class="cancel" data-id="${b.id}" data-action="cancelled">キャンセル</button>` : ""}
+            ${b.status !== "pending" ? `<button data-id="${b.id}" data-action="pending">未確定に戻す</button>` : ""}
+            <button class="del" data-id="${b.id}" data-action="delete">削除</button>
+          </div>
+        </div>`;
+    });
+    list.innerHTML = html;
+
+    list.querySelectorAll("button[data-action]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.id;
+        const action = btn.dataset.action;
+        if (action === "delete") {
+          if (confirm("この予約を削除しますか？")) deleteBooking(id);
+        } else {
+          updateBookingStatus(id, action);
+        }
+        renderList();
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>

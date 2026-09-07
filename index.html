@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ご予約 | Linora nail &amp; care</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Shippori+Mincho:wght@500;600&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #FBF7F1;
+    --surface: #FFFFFF;
+    --surface-alt: #F3ECE1;
+    --line: #E1D3B8;
+    --ink: #382E24;
+    --ink-soft: #8B7B65;
+    --gold: #A9843F;
+    --gold-deep: #8C6C2E;
+    --sage: #74836B;
+    --danger: #A85B4C;
+    --radius: 2px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Noto Sans JP", sans-serif;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap{
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--bg);
+    position: relative;
+    padding-bottom: 100px;
+  }
+  header.brand{
+    padding: 36px 28px 22px;
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+  }
+  header.brand .mark{
+    font-family: "Cormorant Garamond", serif;
+    font-style: italic;
+    font-size: 34px;
+    color: var(--gold-deep);
+    letter-spacing: 0.02em;
+  }
+  header.brand .sub{
+    margin-top: 6px;
+    font-family: "Shippori Mincho", serif;
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    color: var(--ink-soft);
+  }
+  .steps{
+    display:flex;
+    justify-content:center;
+    gap: 6px;
+    padding: 18px 20px 0;
+  }
+  .steps .dot{
+    flex:1;
+    max-width: 60px;
+    height: 3px;
+    background: var(--line);
+    border-radius: 2px;
+    transition: background .25s ease;
+  }
+  .steps .dot.active{ background: var(--gold); }
+  .steps .dot.done{ background: var(--gold-deep); }
+
+  main{ padding: 24px 22px 0; }
+  .panel{ display:none; }
+  .panel.visible{ display:block; animation: fade .35s ease; }
+  @keyframes fade{ from{opacity:0; transform: translateY(6px);} to{opacity:1; transform:none;} }
+
+  h2.step-title{
+    font-family: "Shippori Mincho", serif;
+    font-weight: 600;
+    font-size: 20px;
+    margin: 4px 0 4px;
+  }
+  p.step-desc{
+    color: var(--ink-soft);
+    font-size: 13px;
+    margin: 0 0 18px;
+  }
+
+  .multi-note{
+    color: var(--danger);
+    font-size: 12px;
+    margin-left: 6px;
+    font-weight: 500;
+  }
+  .group-label{
+    font-family: "Shippori Mincho", serif;
+    font-size: 14px;
+    color: var(--gold-deep);
+    margin: 22px 0 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+  }
+  .group-label:first-of-type{ margin-top: 0; }
+
+  .menu-row{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+    padding: 12px 4px;
+    border-bottom: 1px dotted var(--line);
+    cursor: pointer;
+  }
+  .menu-row input{
+    accent-color: var(--gold-deep);
+    width: 18px; height: 18px; flex: none;
+  }
+  .menu-row .name{ flex:1; font-size: 15px; }
+  .menu-row .price{ font-size: 14px; color: var(--ink-soft); white-space:nowrap; }
+  .menu-row.checked{ background: var(--surface-alt); }
+
+  .field{ margin-bottom: 18px; }
+  .field label{
+    display:block;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+  .field input, .field select, .field textarea{
+    width: 100%;
+    padding: 12px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .field textarea{ resize: vertical; min-height: 70px; }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline: none;
+    border-color: var(--gold);
+  }
+  .field.required label::after{ content: " ※必須"; color: var(--danger); font-size: 11px; }
+
+  .slot-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .slot-btn{
+    padding: 10px 4px;
+    text-align:center;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    font-size: 14px;
+    cursor:pointer;
+    color: var(--ink);
+  }
+  .slot-btn.selected{
+    background: var(--gold-deep);
+    border-color: var(--gold-deep);
+    color: #fff;
+  }
+  .slot-btn.disabled{
+    color: #C9BFA9;
+    text-decoration: line-through;
+    cursor:not-allowed;
+    background: #F5F0E6;
+  }
+  .slot-empty{
+    color: var(--ink-soft);
+    font-size: 13px;
+    padding: 14px 4px;
+  }
+
+  .summary-card{
+    background: var(--surface-alt);
+    border: 1px solid var(--line);
+    padding: 16px;
+    margin-bottom: 18px;
+  }
+  .summary-card .line{
+    display:flex;
+    justify-content: space-between;
+    font-size: 14px;
+    padding: 5px 0;
+  }
+  .summary-card .line.total{
+    border-top: 1px solid var(--line);
+    margin-top: 6px;
+    padding-top: 10px;
+    font-family: "Shippori Mincho", serif;
+    font-size: 16px;
+    color: var(--gold-deep);
+  }
+  .summary-card .empty-note{ color: var(--ink-soft); font-size: 13px; }
+
+  .nav-bar{
+    position: sticky;
+    bottom: 0;
+    max-width: 480px;
+    margin: 0 auto;
+    background: linear-gradient(to top, var(--bg) 70%, transparent);
+    padding: 18px 22px 22px;
+    display:flex;
+    gap: 10px;
+  }
+  .btn{
+    flex:1;
+    padding: 14px;
+    border: none;
+    border-radius: var(--radius);
+    font-family: "Shippori Mincho", serif;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+  }
+  .btn-primary{ background: var(--gold-deep); color: #fff; }
+  .btn-primary:disabled{ background: #D8CBAE; color: #fff; cursor:not-allowed; }
+  .btn-ghost{ background: transparent; color: var(--ink-soft); border: 1px solid var(--line); flex: 0 0 90px; }
+
+  .error-text{ color: var(--danger); font-size: 12px; margin-top: 6px; display:none; }
+
+  /* success screen */
+  .success{ text-align:center; padding: 60px 26px 40px; }
+  .success .icon{
+    width: 56px; height:56px; margin: 0 auto 20px;
+    border: 1px solid var(--gold-deep);
+    border-radius: 50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family: "Cormorant Garamond", serif;
+    font-size: 26px; color: var(--gold-deep);
+  }
+  .success h2{ font-family:"Shippori Mincho", serif; font-size: 21px; margin: 0 0 10px; }
+  .success p{ color: var(--ink-soft); font-size: 14px; }
+  .success .summary-card{ text-align:left; margin-top: 24px; }
+
+  footer.note{
+    text-align:center;
+    color: var(--ink-soft);
+    font-size: 11px;
+    padding: 20px 30px 0;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="brand">
+    <div class="mark">Linora</div>
+    <div class="sub">nail &amp; care ご予約</div>
+  </header>
+
+  <div class="steps" id="stepsIndicator">
+    <div class="dot" data-step="1"></div>
+    <div class="dot" data-step="2"></div>
+    <div class="dot" data-step="3"></div>
+    <div class="dot" data-step="4"></div>
+  </div>
+
+  <main>
+    <!-- STEP 1: メニュー選択 -->
+    <section class="panel" id="panel1">
+      <h2 class="step-title">メニューを選ぶ</h2>
+      <p class="step-desc">ご希望のメニューをお選びください。<span class="multi-note">※メニュー・オプションともに複数選択可</span></p>
+      <div id="menuArea"></div>
+      <div class="summary-card" id="menuSummary"></div>
+    </section>
+
+    <!-- STEP 2: 日時選択 -->
+    <section class="panel" id="panel2">
+      <h2 class="step-title">日時を選ぶ</h2>
+      <p class="step-desc">ご希望の日付と時間を選択してください。</p>
+      <div class="field">
+        <label for="dateInput">来店日</label>
+        <input type="date" id="dateInput">
+      </div>
+      <div id="slotArea"></div>
+    </section>
+
+    <!-- STEP 3: お客様情報 -->
+    <section class="panel" id="panel3">
+      <h2 class="step-title">お客様情報</h2>
+      <p class="step-desc">ご連絡先を入力してください。</p>
+      <div class="field required">
+        <label for="nameInput">お名前</label>
+        <input type="text" id="nameInput" placeholder="山田 花子">
+      </div>
+      <div class="field required">
+        <label for="telInput">電話番号</label>
+        <input type="tel" id="telInput" placeholder="090-1234-5678">
+      </div>
+      <div class="field">
+        <label for="lineInput">LINE名（分かる場合）</label>
+        <input type="text" id="lineInput" placeholder="LINEの表示名">
+      </div>
+      <div class="field">
+        <label for="noteInput">ご要望・備考</label>
+        <textarea id="noteInput" placeholder="デザインのご希望や、初回かどうかなど"></textarea>
+      </div>
+      <div class="error-text" id="formError">お名前と電話番号を入力してください。</div>
+    </section>
+
+    <!-- STEP 4: 確認 -->
+    <section class="panel" id="panel4">
+      <h2 class="step-title">予約内容の確認</h2>
+      <p class="step-desc">内容をご確認の上、送信してください。</p>
+      <div class="summary-card" id="confirmSummary"></div>
+    </section>
+
+    <!-- 完了画面 -->
+    <section class="panel" id="panelDone">
+      <div class="success">
+        <div class="icon">✓</div>
+        <h2>ご予約を受け付けました</h2>
+        <p>サロンからの確定連絡をお待ちください。</p>
+        <div class="summary-card" id="doneSummary"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="nav-bar" id="navBar">
+    <button class="btn btn-ghost" id="btnBack">戻る</button>
+    <button class="btn btn-primary" id="btnNext">次へ</button>
+  </div>
+
+  <footer class="note">Linora nail &amp; care ・ 都城市チャレンジショップ</footer>
+</div>
+
+<script src="shared.js"></script>
+<script>
+(function(){
+  let step = 1;
+  const totalSteps = 4;
+  const state = {
+    menuItemIds: new Set(),
+    optionIds: new Set(),
+    date: null,
+    time: null,
+    name: "", tel: "", line: "", note: "",
+  };
+
+  const panels = { 1: panel1, 2: panel2, 3: panel3, 4: panel4 };
+  const dots = document.querySelectorAll(".steps .dot");
+  const navBar = document.getElementById("navBar");
+  const btnBack = document.getElementById("btnBack");
+  const btnNext = document.getElementById("btnNext");
+
+  function renderMenu(){
+    const area = document.getElementById("menuArea");
+    area.innerHTML = "";
+    [LINORU_MENU.care, LINORU_MENU.gel, LINORU_MENU.off].forEach(group => {
+      const label = document.createElement("div");
+      label.className = "group-label";
+      label.textContent = group.label;
+      area.appendChild(label);
+      group.items.forEach(item => {
+        area.appendChild(buildRow(item, "menu"));
+      });
+    });
+    const optLabel = document.createElement("div");
+    optLabel.className = "group-label";
+    optLabel.textContent = "OPTION（複数選択可）";
+    area.appendChild(optLabel);
+    LINORU_OPTIONS.forEach(item => area.appendChild(buildRow(item, "option")));
+    updateMenuSummary();
+  }
+
+  function priceLabel(item){
+    return (item.priceUpTo ? "〜" : "") + yen(item.price);
+  }
+
+  function buildRow(item, kind){
+    const row = document.createElement("label");
+    row.className = "menu-row";
+    row.dataset.id = item.id;
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.name = kind === "menu" ? "menu_" + item.id : "opt_" + item.id;
+    input.addEventListener("change", () => {
+      const targetSet = kind === "menu" ? state.menuItemIds : state.optionIds;
+      if (input.checked) targetSet.add(item.id); else targetSet.delete(item.id);
+      row.classList.toggle("checked", input.checked);
+      updateMenuSummary();
+      validateStep();
+    });
+    row.dataset.kind = kind;
+    const name = document.createElement("span");
+    name.className = "name";
+    name.textContent = item.name;
+    const price = document.createElement("span");
+    price.className = "price";
+    price.textContent = priceLabel(item);
+    row.appendChild(input);
+    row.appendChild(name);
+    row.appendChild(price);
+    return row;
+  }
+
+  function selectedMenuItems(){
+    const all = [LINORU_MENU.care, LINORU_MENU.gel, LINORU_MENU.off].flatMap(g => g.items);
+    return all.filter(i => state.menuItemIds.has(i.id));
+  }
+
+  function selectedOptions(){
+    return LINORU_OPTIONS.filter(o => state.optionIds.has(o.id));
+  }
+
+  function estimateTotal(){
+    let total = 0;
+    selectedMenuItems().forEach(m => total += m.price);
+    selectedOptions().forEach(o => total += o.price);
+    return total;
+  }
+
+  function estimateDuration(){
+    return selectedMenuItems().reduce((sum, m) => sum + m.duration, 0);
+  }
+
+  function updateMenuSummary(){
+    const box = document.getElementById("menuSummary");
+    const items = selectedMenuItems();
+    if (items.length === 0) {
+      box.innerHTML = '<div class="empty-note">メニューを選択してください</div>';
+      return;
+    }
+    let html = "";
+    items.forEach(m => {
+      html += `<div class="line"><span>${m.name}</span><span>${priceLabel(m)}</span></div>`;
+    });
+    selectedOptions().forEach(o => {
+      html += `<div class="line"><span>＋ ${o.name}</span><span>${priceLabel(o)}</span></div>`;
+    });
+    html += `<div class="line total"><span>目安合計</span><span>${yen(estimateTotal())}〜</span></div>`;
+    box.innerHTML = html;
+  }
+
+  function renderSlots(){
+    const dateInput = document.getElementById("dateInput");
+    const area = document.getElementById("slotArea");
+    if (!dateInput.value) { area.innerHTML = ""; return; }
+    const d = new Date(dateInput.value + "T00:00:00");
+    const hours = loadHours();
+    const slots = timeSlotsForDate(d, hours);
+    if (slots.length === 0) {
+      area.innerHTML = '<div class="slot-empty">選択した日は定休日です。別の日をお選びください。</div>';
+      state.time = null;
+      return;
+    }
+    const existing = loadBookings().filter(b => b.date === dateKey(d) && b.status !== "cancelled");
+    const taken = new Set(existing.map(b => b.time));
+    const grid = document.createElement("div");
+    grid.className = "slot-grid";
+    slots.forEach(t => {
+      const btn = document.createElement("div");
+      btn.className = "slot-btn" + (taken.has(t) ? " disabled" : "");
+      btn.textContent = t;
+      if (!taken.has(t)) {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".slot-btn").forEach(b => b.classList.remove("selected"));
+          btn.classList.add("selected");
+          state.time = t;
+          validateStep();
+        });
+      }
+      grid.appendChild(btn);
+    });
+    area.innerHTML = "";
+    area.appendChild(grid);
+  }
+
+  document.getElementById("dateInput").addEventListener("change", (e) => {
+    state.date = e.target.value;
+    state.time = null;
+    renderSlots();
+    validateStep();
+  });
+
+  ["nameInput","telInput","lineInput","noteInput"].forEach(id => {
+    document.getElementById(id).addEventListener("input", (e) => {
+      const key = id.replace("Input","");
+      state[key] = e.target.value;
+      validateStep();
+    });
+  });
+
+  function renderConfirm(){
+    const items = selectedMenuItems();
+    const opts = selectedOptions();
+    let html = `<div class="line"><span>メニュー</span><span>${items.map(m=>m.name).join("、")}</span></div>`;
+    if (opts.length) html += `<div class="line"><span>オプション</span><span>${opts.map(o=>o.name).join("、")}</span></div>`;
+    html += `<div class="line"><span>日時</span><span>${state.date} ${state.time}</span></div>`;
+    html += `<div class="line"><span>お名前</span><span>${state.name} 様</span></div>`;
+    html += `<div class="line"><span>電話番号</span><span>${state.tel}</span></div>`;
+    if (state.line) html += `<div class="line"><span>LINE名</span><span>${state.line}</span></div>`;
+    if (state.note) html += `<div class="line"><span>備考</span><span>${state.note}</span></div>`;
+    html += `<div class="line total"><span>お会計目安</span><span>${yen(estimateTotal())}〜</span></div>`;
+    document.getElementById("confirmSummary").innerHTML = html;
+  }
+
+  function validateStep(){
+    let ok = true;
+    if (step === 1) ok = state.menuItemIds.size > 0;
+    if (step === 2) ok = !!(state.date && state.time);
+    if (step === 3) ok = !!(state.name.trim() && state.tel.trim());
+    btnNext.disabled = !ok;
+    return ok;
+  }
+
+  function goToStep(n){
+    step = n;
+    Object.values(panels).forEach(p => p.classList.remove("visible"));
+    document.getElementById("panelDone").classList.remove("visible");
+    if (step <= totalSteps) panels[step].classList.add("visible");
+    dots.forEach(d => {
+      const s = parseInt(d.dataset.step, 10);
+      d.classList.toggle("active", s === step);
+      d.classList.toggle("done", s < step);
+    });
+    btnBack.style.visibility = step === 1 ? "hidden" : "visible";
+    btnNext.textContent = step === totalSteps ? "予約を送信する" : "次へ";
+    if (step === 4) renderConfirm();
+    validateStep();
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+
+  btnBack.addEventListener("click", () => { if (step > 1) goToStep(step - 1); });
+
+  btnNext.addEventListener("click", () => {
+    if (!validateStep()) return;
+    if (step < totalSteps) {
+      goToStep(step + 1);
+      return;
+    }
+    // submit
+    const items = selectedMenuItems();
+    const booking = addBooking({
+      menuIds: items.map(m => m.id),
+      menuName: items.map(m => m.name).join("、"),
+      optionIds: Array.from(state.optionIds),
+      optionNames: selectedOptions().map(o => o.name),
+      date: state.date,
+      time: state.time,
+      name: state.name.trim(),
+      tel: state.tel.trim(),
+      line: state.line.trim(),
+      note: state.note.trim(),
+      total: estimateTotal(),
+    });
+    document.getElementById("doneSummary").innerHTML =
+      `<div class="line"><span>メニュー</span><span>${booking.menuName}</span></div>` +
+      `<div class="line"><span>日時</span><span>${booking.date} ${booking.time}</span></div>` +
+      `<div class="line"><span>お名前</span><span>${booking.name} 様</span></div>` +
+      `<div class="line total"><span>お会計目安</span><span>${yen(booking.total)}〜</span></div>`;
+    Object.values(panels).forEach(p => p.classList.remove("visible"));
+    document.getElementById("panelDone").classList.add("visible");
+    navBar.style.display = "none";
+    dots.forEach(d => d.classList.add("done"));
+    window.scrollTo({top:0, behavior:"smooth"});
+  });
+
+  // init
+  renderMenu();
+  const dateInput = document.getElementById("dateInput");
+  const today = new Date();
+  dateInput.min = dateKey(today);
+  goToStep(1);
+})();
+</script>
+</body>
+</html>
