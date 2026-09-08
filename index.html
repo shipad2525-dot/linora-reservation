@@ -15,6 +15,7 @@
     --line: #E1D3B8;
     --ink: #382E24;
     --ink-soft: #8B7B65;
+    --ink-faint: #C9BFA9;
     --gold: #A9843F;
     --gold-deep: #8C6C2E;
     --sage: #74836B;
@@ -60,12 +61,12 @@
   .steps{
     display:flex;
     justify-content:center;
-    gap: 6px;
+    gap: 5px;
     padding: 18px 20px 0;
   }
   .steps .dot{
     flex:1;
-    max-width: 60px;
+    max-width: 46px;
     height: 3px;
     background: var(--line);
     border-radius: 2px;
@@ -90,13 +91,81 @@
     font-size: 13px;
     margin: 0 0 18px;
   }
-
   .multi-note{
     color: var(--danger);
     font-size: 12px;
-    margin-left: 6px;
+    margin-left: 4px;
     font-weight: 500;
   }
+
+  /* ---- calendar ---- */
+  .cal-nav{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom: 12px;
+  }
+  .cal-nav .month-label{
+    font-family: "Shippori Mincho", serif;
+    font-size: 16px;
+  }
+  .cal-nav button{
+    border: 1px solid var(--line);
+    background: var(--surface);
+    width: 32px; height: 32px;
+    font-size: 15px;
+    color: var(--ink);
+    cursor:pointer;
+  }
+  .cal-nav button:disabled{ opacity: .3; cursor:not-allowed; }
+  .cal-grid{
+    display:grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    text-align:center;
+  }
+  .cal-grid .wd{
+    font-size: 11px;
+    color: var(--ink-soft);
+    padding-bottom: 6px;
+  }
+  .cal-cell{
+    position:relative;
+    aspect-ratio: 1;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-size: 13px;
+    border: 1px solid transparent;
+    cursor:pointer;
+    color: var(--ink);
+  }
+  .cal-cell.pad{ visibility:hidden; cursor:default; }
+  .cal-cell .num{ font-size: 13px; }
+  .cal-cell .dot-avail{
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--sage);
+    margin-top: 3px;
+  }
+  .cal-cell.closed, .cal-cell.past{
+    color: var(--ink-faint);
+    cursor:not-allowed;
+  }
+  .cal-cell.full{
+    color: var(--ink-faint);
+    text-decoration: line-through;
+    cursor:not-allowed;
+  }
+  .cal-cell.selected{
+    background: var(--gold-deep);
+    color: #fff;
+    border-radius: 50%;
+  }
+  .cal-cell.selected .dot-avail{ background: #fff; }
+  .cal-legend{
+    display:flex; gap: 14px; margin-top: 14px; font-size: 11px; color: var(--ink-soft);
+  }
+  .cal-legend span{ display:flex; align-items:center; gap: 5px; }
+  .cal-legend .sw{ width: 8px; height: 8px; border-radius: 50%; }
+  .sw.avail{ background: var(--sage); }
+  .sw.full{ background: var(--ink-faint); }
+
   .group-label{
     font-family: "Shippori Mincho", serif;
     font-size: 14px;
@@ -113,15 +182,33 @@
     gap: 12px;
     padding: 12px 4px;
     border-bottom: 1px dotted var(--line);
-    cursor: pointer;
   }
-  .menu-row input{
+  .menu-row input[type=checkbox]{
     accent-color: var(--gold-deep);
     width: 18px; height: 18px; flex: none;
   }
-  .menu-row .name{ flex:1; font-size: 15px; }
+  .menu-row .name-wrap{ flex:1; }
+  .menu-row .name{ font-size: 15px; display:block; }
+  .menu-row .note{ font-size: 11px; color: var(--ink-soft); display:block; margin-top: 2px; }
   .menu-row .price{ font-size: 14px; color: var(--ink-soft); white-space:nowrap; }
   .menu-row.checked{ background: var(--surface-alt); }
+  .menu-row.disabled{ opacity: .55; }
+  .menu-row.disabled .name{ text-decoration: line-through; }
+  .menu-row.disabled .note{ color: var(--danger); text-decoration:none; }
+
+  .qty-stepper{
+    display:flex; align-items:center; gap: 8px;
+    margin-left: 30px; margin-top: -6px; margin-bottom: 10px;
+  }
+  .qty-stepper button{
+    width: 26px; height: 26px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-size: 14px;
+    cursor:pointer;
+    color: var(--ink);
+  }
+  .qty-stepper .qty-val{ font-size: 13px; min-width: 42px; text-align:center; }
 
   .field{ margin-bottom: 18px; }
   .field label{
@@ -130,7 +217,7 @@
     color: var(--ink-soft);
     margin-bottom: 6px;
   }
-  .field input, .field select, .field textarea{
+  .field input, .field textarea{
     width: 100%;
     padding: 12px 12px;
     border: 1px solid var(--line);
@@ -141,10 +228,7 @@
     color: var(--ink);
   }
   .field textarea{ resize: vertical; min-height: 70px; }
-  .field input:focus, .field select:focus, .field textarea:focus{
-    outline: none;
-    border-color: var(--gold);
-  }
+  .field input:focus, .field textarea:focus{ outline: none; border-color: var(--gold); }
   .field.required label::after{ content: " ※必須"; color: var(--danger); font-size: 11px; }
 
   .slot-grid{
@@ -163,22 +247,16 @@
     cursor:pointer;
     color: var(--ink);
   }
-  .slot-btn.selected{
-    background: var(--gold-deep);
-    border-color: var(--gold-deep);
-    color: #fff;
+  .slot-btn.selected{ background: var(--gold-deep); border-color: var(--gold-deep); color: #fff; }
+  .slot-btn.disabled{ color: var(--ink-faint); text-decoration: line-through; cursor:not-allowed; background: #F5F0E6; }
+  .slot-empty{ color: var(--ink-soft); font-size: 13px; padding: 14px 4px; }
+  .selected-date-label{
+    font-family: "Shippori Mincho", serif;
+    color: var(--gold-deep);
+    font-size: 15px;
+    margin-bottom: 4px;
   }
-  .slot-btn.disabled{
-    color: #C9BFA9;
-    text-decoration: line-through;
-    cursor:not-allowed;
-    background: #F5F0E6;
-  }
-  .slot-empty{
-    color: var(--ink-soft);
-    font-size: 13px;
-    padding: 14px 4px;
-  }
+  .duration-note{ font-size: 12px; color: var(--ink-soft); margin-bottom: 4px; }
 
   .summary-card{
     background: var(--surface-alt);
@@ -186,19 +264,12 @@
     padding: 16px;
     margin-bottom: 18px;
   }
-  .summary-card .line{
-    display:flex;
-    justify-content: space-between;
-    font-size: 14px;
-    padding: 5px 0;
-  }
+  .summary-card .line{ display:flex; justify-content: space-between; font-size: 14px; padding: 5px 0; }
   .summary-card .line.total{
     border-top: 1px solid var(--line);
-    margin-top: 6px;
-    padding-top: 10px;
+    margin-top: 6px; padding-top: 10px;
     font-family: "Shippori Mincho", serif;
-    font-size: 16px;
-    color: var(--gold-deep);
+    font-size: 16px; color: var(--gold-deep);
   }
   .summary-card .empty-note{ color: var(--ink-soft); font-size: 13px; }
 
@@ -226,9 +297,6 @@
   .btn-primary:disabled{ background: #D8CBAE; color: #fff; cursor:not-allowed; }
   .btn-ghost{ background: transparent; color: var(--ink-soft); border: 1px solid var(--line); flex: 0 0 90px; }
 
-  .error-text{ color: var(--danger); font-size: 12px; margin-top: 6px; display:none; }
-
-  /* success screen */
   .success{ text-align:center; padding: 60px 26px 40px; }
   .success .icon{
     width: 56px; height:56px; margin: 0 auto 20px;
@@ -262,30 +330,44 @@
     <div class="dot" data-step="2"></div>
     <div class="dot" data-step="3"></div>
     <div class="dot" data-step="4"></div>
+    <div class="dot" data-step="5"></div>
   </div>
 
   <main>
-    <!-- STEP 1: メニュー選択 -->
+    <!-- STEP 1: 日付選択（カレンダー） -->
     <section class="panel" id="panel1">
+      <h2 class="step-title">日付を選ぶ</h2>
+      <p class="step-desc">緑の点がある日は空きあり／火曜定休です。</p>
+      <div class="cal-nav">
+        <button id="prevMonth" type="button">‹</button>
+        <div class="month-label" id="monthLabel"></div>
+        <button id="nextMonth" type="button">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-legend">
+        <span><span class="sw avail"></span>空きあり</span>
+        <span><span class="sw full"></span>満席／定休日</span>
+      </div>
+    </section>
+
+    <!-- STEP 2: メニュー選択 -->
+    <section class="panel" id="panel2">
       <h2 class="step-title">メニューを選ぶ</h2>
       <p class="step-desc">ご希望のメニューをお選びください。<span class="multi-note">※メニュー・オプションともに複数選択可</span></p>
       <div id="menuArea"></div>
       <div class="summary-card" id="menuSummary"></div>
     </section>
 
-    <!-- STEP 2: 日時選択 -->
-    <section class="panel" id="panel2">
-      <h2 class="step-title">日時を選ぶ</h2>
-      <p class="step-desc">ご希望の日付と時間を選択してください。</p>
-      <div class="field">
-        <label for="dateInput">来店日</label>
-        <input type="date" id="dateInput">
-      </div>
+    <!-- STEP 3: 時間選択 -->
+    <section class="panel" id="panel3">
+      <h2 class="step-title">時間を選ぶ</h2>
+      <div class="selected-date-label" id="selectedDateLabel"></div>
+      <div class="duration-note" id="durationNote"></div>
       <div id="slotArea"></div>
     </section>
 
-    <!-- STEP 3: お客様情報 -->
-    <section class="panel" id="panel3">
+    <!-- STEP 4: お客様情報 -->
+    <section class="panel" id="panel4">
       <h2 class="step-title">お客様情報</h2>
       <p class="step-desc">ご連絡先を入力してください。</p>
       <div class="field required">
@@ -304,11 +386,10 @@
         <label for="noteInput">ご要望・備考</label>
         <textarea id="noteInput" placeholder="デザインのご希望や、初回かどうかなど"></textarea>
       </div>
-      <div class="error-text" id="formError">お名前と電話番号を入力してください。</div>
     </section>
 
-    <!-- STEP 4: 確認 -->
-    <section class="panel" id="panel4">
+    <!-- STEP 5: 確認 -->
+    <section class="panel" id="panel5">
       <h2 class="step-title">予約内容の確認</h2>
       <p class="step-desc">内容をご確認の上、送信してください。</p>
       <div class="summary-card" id="confirmSummary"></div>
@@ -337,21 +418,107 @@
 <script>
 (function(){
   let step = 1;
-  const totalSteps = 4;
+  const totalSteps = 5;
   const state = {
+    date: null,          // "YYYY-MM-DD"
+    time: null,
     menuItemIds: new Set(),
     optionIds: new Set(),
-    date: null,
-    time: null,
+    optionQty: {},        // id -> qty
     name: "", tel: "", line: "", note: "",
   };
 
-  const panels = { 1: panel1, 2: panel2, 3: panel3, 4: panel4 };
+  const panels = { 1: panel1, 2: panel2, 3: panel3, 4: panel4, 5: panel5 };
   const dots = document.querySelectorAll(".steps .dot");
   const navBar = document.getElementById("navBar");
   const btnBack = document.getElementById("btnBack");
   const btnNext = document.getElementById("btnNext");
+  const hours = loadHours();
 
+  // ---------- STEP 1: カレンダー ----------
+  let calYear, calMonth; // calMonth: 0-11
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  function initCalendar(){
+    calYear = today.getFullYear();
+    calMonth = today.getMonth();
+    renderCalendar();
+  }
+
+  function renderCalendar(){
+    const first = new Date(calYear, calMonth, 1);
+    const startWeekday = first.getDay();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    document.getElementById("monthLabel").textContent = `${calYear}年 ${calMonth + 1}月`;
+
+    const prevBtn = document.getElementById("prevMonth");
+    const isCurrentMonth = (calYear === today.getFullYear() && calMonth === today.getMonth());
+    prevBtn.disabled = isCurrentMonth;
+
+    const grid = document.getElementById("calGrid");
+    grid.innerHTML = "";
+    ["日","月","火","水","木","金","土"].forEach(w => {
+      const wd = document.createElement("div");
+      wd.className = "wd";
+      wd.textContent = w;
+      grid.appendChild(wd);
+    });
+    for (let i = 0; i < startWeekday; i++) {
+      const pad = document.createElement("div");
+      pad.className = "cal-cell pad";
+      grid.appendChild(pad);
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateObj = new Date(calYear, calMonth, d);
+      const key = dateKey(dateObj);
+      const cell = document.createElement("div");
+      cell.className = "cal-cell";
+      const isPast = dateObj < today;
+      const isClosed = hours.closedWeekdays.includes(dateObj.getDay());
+      const numEl = document.createElement("div");
+      numEl.className = "num";
+      numEl.textContent = d;
+      cell.appendChild(numEl);
+
+      if (isPast) {
+        cell.classList.add("past");
+      } else if (isClosed) {
+        cell.classList.add("closed");
+      } else {
+        const hasOpening = dayHasAnyOpening(dateObj, hours);
+        if (!hasOpening) {
+          cell.classList.add("full");
+        } else {
+          const dot = document.createElement("div");
+          dot.className = "dot-avail";
+          cell.appendChild(dot);
+          cell.addEventListener("click", () => {
+            state.date = key;
+            state.time = null;
+            document.querySelectorAll(".cal-cell.selected").forEach(c => c.classList.remove("selected"));
+            cell.classList.add("selected");
+            validateStep();
+          });
+        }
+      }
+      if (state.date === key) cell.classList.add("selected");
+      grid.appendChild(cell);
+    }
+  }
+
+  document.getElementById("prevMonth").addEventListener("click", () => {
+    calMonth -= 1;
+    if (calMonth < 0) { calMonth = 11; calYear -= 1; }
+    renderCalendar();
+  });
+  document.getElementById("nextMonth").addEventListener("click", () => {
+    calMonth += 1;
+    if (calMonth > 11) { calMonth = 0; calYear += 1; }
+    renderCalendar();
+  });
+
+  // ---------- STEP 2: メニュー ----------
   function renderMenu(){
     const area = document.getElementById("menuArea");
     area.innerHTML = "";
@@ -360,15 +527,13 @@
       label.className = "group-label";
       label.textContent = group.label;
       area.appendChild(label);
-      group.items.forEach(item => {
-        area.appendChild(buildRow(item, "menu"));
-      });
+      group.items.forEach(item => area.appendChild(buildMenuRow(item)));
     });
     const optLabel = document.createElement("div");
     optLabel.className = "group-label";
-    optLabel.textContent = "OPTION（複数選択可）";
+    optLabel.textContent = "OPTION（複数選択可・本数指定）";
     area.appendChild(optLabel);
-    LINORU_OPTIONS.forEach(item => area.appendChild(buildRow(item, "option")));
+    LINORU_OPTIONS.forEach(item => area.appendChild(buildOptionRow(item)));
     updateMenuSummary();
   }
 
@@ -376,53 +541,124 @@
     return (item.priceUpTo ? "〜" : "") + yen(item.price);
   }
 
-  function buildRow(item, kind){
+  function buildMenuRow(item){
     const row = document.createElement("label");
-    row.className = "menu-row";
-    row.dataset.id = item.id;
+    row.className = "menu-row" + (item.disabled ? " disabled" : "");
     const input = document.createElement("input");
     input.type = "checkbox";
-    input.name = kind === "menu" ? "menu_" + item.id : "opt_" + item.id;
+    input.disabled = !!item.disabled;
     input.addEventListener("change", () => {
-      const targetSet = kind === "menu" ? state.menuItemIds : state.optionIds;
-      if (input.checked) targetSet.add(item.id); else targetSet.delete(item.id);
+      if (input.checked) state.menuItemIds.add(item.id); else state.menuItemIds.delete(item.id);
       row.classList.toggle("checked", input.checked);
       updateMenuSummary();
       validateStep();
     });
-    row.dataset.kind = kind;
+    const nameWrap = document.createElement("div");
+    nameWrap.className = "name-wrap";
     const name = document.createElement("span");
     name.className = "name";
     name.textContent = item.name;
+    nameWrap.appendChild(name);
+    if (item.disabled && item.disabledNote) {
+      const note = document.createElement("span");
+      note.className = "note";
+      note.textContent = "※ " + item.disabledNote;
+      nameWrap.appendChild(note);
+    } else if (item.note) {
+      const note = document.createElement("span");
+      note.className = "note";
+      note.textContent = "（" + item.note + "）";
+      nameWrap.appendChild(note);
+    }
     const price = document.createElement("span");
     price.className = "price";
     price.textContent = priceLabel(item);
     row.appendChild(input);
-    row.appendChild(name);
+    row.appendChild(nameWrap);
     row.appendChild(price);
     return row;
+  }
+
+  function buildOptionRow(item){
+    const wrap = document.createElement("div");
+    state.optionQty[item.id] = state.optionQty[item.id] || 1;
+
+    const row = document.createElement("label");
+    row.className = "menu-row";
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    const nameWrap = document.createElement("div");
+    nameWrap.className = "name-wrap";
+    const name = document.createElement("span");
+    name.className = "name";
+    name.textContent = item.name;
+    nameWrap.appendChild(name);
+    const price = document.createElement("span");
+    price.className = "price";
+    price.textContent = yen(item.price) + " /本";
+    row.appendChild(input);
+    row.appendChild(nameWrap);
+    row.appendChild(price);
+
+    const stepper = document.createElement("div");
+    stepper.className = "qty-stepper";
+    stepper.style.display = "none";
+    const minus = document.createElement("button");
+    minus.type = "button"; minus.textContent = "－";
+    const qtyVal = document.createElement("span");
+    qtyVal.className = "qty-val";
+    qtyVal.textContent = "本数：" + state.optionQty[item.id];
+    const plus = document.createElement("button");
+    plus.type = "button"; plus.textContent = "＋";
+    stepper.appendChild(minus);
+    stepper.appendChild(qtyVal);
+    stepper.appendChild(plus);
+
+    function refreshQty(){
+      qtyVal.textContent = "本数：" + state.optionQty[item.id];
+    }
+    minus.addEventListener("click", () => {
+      state.optionQty[item.id] = Math.max(1, state.optionQty[item.id] - 1);
+      refreshQty();
+      updateMenuSummary();
+    });
+    plus.addEventListener("click", () => {
+      state.optionQty[item.id] = Math.min(10, state.optionQty[item.id] + 1);
+      refreshQty();
+      updateMenuSummary();
+    });
+
+    input.addEventListener("change", () => {
+      if (input.checked) state.optionIds.add(item.id); else state.optionIds.delete(item.id);
+      row.classList.toggle("checked", input.checked);
+      stepper.style.display = input.checked ? "flex" : "none";
+      updateMenuSummary();
+      validateStep();
+    });
+
+    wrap.appendChild(row);
+    wrap.appendChild(stepper);
+    return wrap;
   }
 
   function selectedMenuItems(){
     const all = [LINORU_MENU.care, LINORU_MENU.gel, LINORU_MENU.off].flatMap(g => g.items);
     return all.filter(i => state.menuItemIds.has(i.id));
   }
-
   function selectedOptions(){
     return LINORU_OPTIONS.filter(o => state.optionIds.has(o.id));
   }
-
   function estimateTotal(){
     let total = 0;
     selectedMenuItems().forEach(m => total += m.price);
-    selectedOptions().forEach(o => total += o.price);
+    selectedOptions().forEach(o => total += o.price * (state.optionQty[o.id] || 1));
     return total;
   }
-
   function estimateDuration(){
-    return selectedMenuItems().reduce((sum, m) => sum + m.duration, 0);
+    let dur = selectedMenuItems().reduce((sum, m) => sum + m.duration, 0);
+    selectedOptions().forEach(o => dur += (o.perNailDuration || 0) * (state.optionQty[o.id] || 1));
+    return dur || 30;
   }
-
   function updateMenuSummary(){
     const box = document.getElementById("menuSummary");
     const items = selectedMenuItems();
@@ -431,41 +667,39 @@
       return;
     }
     let html = "";
-    items.forEach(m => {
-      html += `<div class="line"><span>${m.name}</span><span>${priceLabel(m)}</span></div>`;
-    });
+    items.forEach(m => html += `<div class="line"><span>${m.name}</span><span>${priceLabel(m)}</span></div>`);
     selectedOptions().forEach(o => {
-      html += `<div class="line"><span>＋ ${o.name}</span><span>${priceLabel(o)}</span></div>`;
+      const qty = state.optionQty[o.id] || 1;
+      html += `<div class="line"><span>＋ ${o.name} × ${qty}本</span><span>${yen(o.price * qty)}</span></div>`;
     });
     html += `<div class="line total"><span>目安合計</span><span>${yen(estimateTotal())}〜</span></div>`;
     box.innerHTML = html;
   }
 
+  // ---------- STEP 3: 時間選択 ----------
   function renderSlots(){
-    const dateInput = document.getElementById("dateInput");
     const area = document.getElementById("slotArea");
-    if (!dateInput.value) { area.innerHTML = ""; return; }
-    const d = new Date(dateInput.value + "T00:00:00");
-    const hours = loadHours();
-    const slots = timeSlotsForDate(d, hours);
+    document.getElementById("selectedDateLabel").textContent = state.date ? state.date + " のご予約" : "";
+    const dur = estimateDuration();
+    document.getElementById("durationNote").textContent = `所要時間の目安：約${dur}分`;
+    if (!state.date) { area.innerHTML = ""; return; }
+    const dateObj = new Date(state.date + "T00:00:00");
+    const slots = availableSlotsForDate(dateObj, dur, hours);
     if (slots.length === 0) {
-      area.innerHTML = '<div class="slot-empty">選択した日は定休日です。別の日をお選びください。</div>';
-      state.time = null;
+      area.innerHTML = '<div class="slot-empty">選択した日は定休日です。前の画面で別の日をお選びください。</div>';
       return;
     }
-    const existing = loadBookings().filter(b => b.date === dateKey(d) && b.status !== "cancelled");
-    const taken = new Set(existing.map(b => b.time));
     const grid = document.createElement("div");
     grid.className = "slot-grid";
-    slots.forEach(t => {
+    slots.forEach(s => {
       const btn = document.createElement("div");
-      btn.className = "slot-btn" + (taken.has(t) ? " disabled" : "");
-      btn.textContent = t;
-      if (!taken.has(t)) {
+      btn.className = "slot-btn" + (!s.available ? " disabled" : "") + (state.time === s.time ? " selected" : "");
+      btn.textContent = s.time;
+      if (s.available) {
         btn.addEventListener("click", () => {
           document.querySelectorAll(".slot-btn").forEach(b => b.classList.remove("selected"));
           btn.classList.add("selected");
-          state.time = t;
+          state.time = s.time;
           validateStep();
         });
       }
@@ -475,13 +709,7 @@
     area.appendChild(grid);
   }
 
-  document.getElementById("dateInput").addEventListener("change", (e) => {
-    state.date = e.target.value;
-    state.time = null;
-    renderSlots();
-    validateStep();
-  });
-
+  // ---------- STEP 4: お客様情報 ----------
   ["nameInput","telInput","lineInput","noteInput"].forEach(id => {
     document.getElementById(id).addEventListener("input", (e) => {
       const key = id.replace("Input","");
@@ -490,11 +718,15 @@
     });
   });
 
+  // ---------- STEP 5: 確認 ----------
   function renderConfirm(){
     const items = selectedMenuItems();
     const opts = selectedOptions();
     let html = `<div class="line"><span>メニュー</span><span>${items.map(m=>m.name).join("、")}</span></div>`;
-    if (opts.length) html += `<div class="line"><span>オプション</span><span>${opts.map(o=>o.name).join("、")}</span></div>`;
+    if (opts.length) {
+      const optText = opts.map(o => `${o.name}×${state.optionQty[o.id] || 1}本`).join("、");
+      html += `<div class="line"><span>オプション</span><span>${optText}</span></div>`;
+    }
     html += `<div class="line"><span>日時</span><span>${state.date} ${state.time}</span></div>`;
     html += `<div class="line"><span>お名前</span><span>${state.name} 様</span></div>`;
     html += `<div class="line"><span>電話番号</span><span>${state.tel}</span></div>`;
@@ -504,11 +736,13 @@
     document.getElementById("confirmSummary").innerHTML = html;
   }
 
+  // ---------- ナビゲーション ----------
   function validateStep(){
     let ok = true;
-    if (step === 1) ok = state.menuItemIds.size > 0;
-    if (step === 2) ok = !!(state.date && state.time);
-    if (step === 3) ok = !!(state.name.trim() && state.tel.trim());
+    if (step === 1) ok = !!state.date;
+    if (step === 2) ok = state.menuItemIds.size > 0;
+    if (step === 3) ok = !!state.time;
+    if (step === 4) ok = !!(state.name.trim() && state.tel.trim());
     btnNext.disabled = !ok;
     return ok;
   }
@@ -525,7 +759,8 @@
     });
     btnBack.style.visibility = step === 1 ? "hidden" : "visible";
     btnNext.textContent = step === totalSteps ? "予約を送信する" : "次へ";
-    if (step === 4) renderConfirm();
+    if (step === 3) renderSlots();
+    if (step === 5) renderConfirm();
     validateStep();
     window.scrollTo({top:0, behavior:"smooth"});
   }
@@ -534,17 +769,16 @@
 
   btnNext.addEventListener("click", () => {
     if (!validateStep()) return;
-    if (step < totalSteps) {
-      goToStep(step + 1);
-      return;
-    }
-    // submit
+    if (step < totalSteps) { goToStep(step + 1); return; }
+
     const items = selectedMenuItems();
+    const opts = selectedOptions();
     const booking = addBooking({
       menuIds: items.map(m => m.id),
       menuName: items.map(m => m.name).join("、"),
       optionIds: Array.from(state.optionIds),
-      optionNames: selectedOptions().map(o => o.name),
+      optionNames: opts.map(o => `${o.name}×${state.optionQty[o.id] || 1}本`),
+      durationMinutes: estimateDuration(),
       date: state.date,
       time: state.time,
       name: state.name.trim(),
@@ -566,10 +800,8 @@
   });
 
   // init
+  initCalendar();
   renderMenu();
-  const dateInput = document.getElementById("dateInput");
-  const today = new Date();
-  dateInput.min = dateKey(today);
   goToStep(1);
 })();
 </script>
